@@ -7,16 +7,12 @@
     "scripts": {
         "dev": "nodemon index.js",
         "start": "node index.js",
-        "build": "prisma generate && prisma migrate deploy && node index.js",
+        "build": "node index.js",
         "lint": "eslint .",
         "test": "jest",
         "preview": "node preview"
     },
-    "prisma": {
-        "schema": "prisma/schema.prisma"
-    },
     "dependencies": {
-        "@prisma/client": "^6.0.1",
         "@vercel/node": "^5.0.0",
         "bcrypt": "^5.1.1",
         "bcryptjs": "^2.4.3",
