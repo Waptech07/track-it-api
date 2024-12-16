@@ -19,6 +19,10 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/packages', packageRoutes);
 
 // app.listen(config.port, () => {
-//   console.log(`Server running on port ${config.port}`);
+//   connectDb();
+//   console.log(`Server is running on http://localhost:${process.env.PORT}`);
 // });
+app.listen(config.port, () => {
+  console.log(`Server running on port ${config.port}`);
+});
 
