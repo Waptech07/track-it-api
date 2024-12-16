@@ -7,7 +7,7 @@
     "scripts": {
         "dev": "nodemon index.js",
         "start": "node index.js",
-        "build": "node build && prisma generate && prisma migrate deploy",
+        "build": "prisma generate && prisma migrate deploy",
         "lint": "eslint .",
         "test": "jest",
         "preview": "node preview"
