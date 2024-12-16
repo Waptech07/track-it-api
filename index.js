@@ -4,7 +4,7 @@ import { config } from './config/env.js';
 import authRoutes from './routes/auth.js';
 import adminRoutes from './routes/admin.js';
 import packageRoutes from './routes/packages.js';
-import connectDb from './connectDb';
+import connectDb from './connectDb.js';
 
 const app = express();
 
@@ -19,11 +19,15 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/packages', packageRoutes);
 
-app.listen(config.port, () => {
-  connectDb();
-  console.log(`Server is running on http://localhost:${process.env.PORT}`);
-});
-// app.listen(config.port, () => {
-//   console.log(`Server running on port ${config.port}`);
-// });
+const startServer = async () => {
+    try {
+        await connectDb(); // Ensure DB is connected before starting server
+        app.listen(config.port, () => {
+            console.log(`Server is running on http://localhost:${config.port}`);
+        });
+    } catch (error) {
+        console.error("Failed to start server:", error.message);
+    }
+};
 
+startServer();

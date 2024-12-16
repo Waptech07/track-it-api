@@ -1,57 +1,45 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { client } from "../connectDb.js";
 
 export const getAllAccounts = async (req, res) => {
   try {
-    const accounts = await prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        country: true,
-        role: true,
-        registrationDate: true,
-        packages: {
-          select: {
-            trackingCode: true,
-            status: true,
-            deliveryDate: true
-          }
-        }
-      }
-    });
-
-    res.json(accounts);
+    const result = await client.query(`
+      SELECT u.id, u.name, u.email, u.country, u.role, u.registration_date AS "registrationDate",
+        json_agg(
+          json_build_object(
+            'trackingCode', p.tracking_code,
+            'status', p.status,
+            'deliveryDate', p.delivery_date
+          )
+        ) AS packages
+      FROM users u
+      LEFT JOIN packages p ON u.id = p.user_id
+      GROUP BY u.id;
+    `);
+    res.json(result.rows);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching accounts' });
+    res.status(500).json({ message: "Error fetching accounts" });
   }
 };
 
-
 export const getUsers = async (req, res) => {
   try {
-    const users = await prisma.user.findMany({
-      where: { role: 'user' },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        country: true,
-        registrationDate: true,
-        packages: {
-          select: {
-            trackingCode: true,
-            status: true,
-            deliveryDate: true
-          }
-        }
-      }
-    });
-
-    res.json(users);
+    const result = await client.query(`
+      SELECT u.id, u.name, u.email, u.country, u.registration_date AS "registrationDate",
+        json_agg(
+          json_build_object(
+            'trackingCode', p.tracking_code,
+            'status', p.status,
+            'deliveryDate', p.delivery_date
+          )
+        ) AS packages
+      FROM users u
+      LEFT JOIN packages p ON u.id = p.user_id
+      WHERE u.role = 'user'
+      GROUP BY u.id;
+    `);
+    res.json(result.rows);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching users' });
+    res.status(500).json({ message: "Error fetching users" });
   }
 };
 
@@ -60,23 +48,27 @@ export const updatePackageStatus = async (req, res) => {
     const { packageId } = req.params;
     const { status, daysRemaining, message } = req.body;
 
-    const updatedPackage = await prisma.package.update({
-      where: { id: packageId },
-      data: {
-        status,
-        daysRemaining,
-        messages: {
-          create: {
-            content: message,
-            userId: req.user.id
-          }
-        }
-      }
-    });
+    const updatedPackage = await client.query(
+      `
+      UPDATE packages
+      SET status = $1, days_remaining = $2
+      WHERE id = $3
+      RETURNING *;
+    `,
+      [status, daysRemaining, packageId]
+    );
 
-    res.json(updatedPackage);
+    await client.query(
+      `
+      INSERT INTO messages (content, user_id, package_id)
+      VALUES ($1, $2, $3);
+    `,
+      [message, req.user.id, packageId]
+    );
+
+    res.json(updatedPackage.rows[0]);
   } catch (error) {
-    res.status(500).json({ message: 'Error updating package status' });
+    res.status(500).json({ message: "Error updating package status" });
   }
 };
 
@@ -84,13 +76,10 @@ export const deleteUser = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    await prisma.user.delete({
-      where: { id: userId }
-    });
-
-    res.json({ message: 'User deleted successfully' });
+    await client.query(`DELETE FROM users WHERE id = $1;`, [userId]);
+    res.json({ message: "User deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting user' });
+    res.status(500).json({ message: "Error deleting user" });
   }
 };
 
@@ -99,14 +88,21 @@ export const editMessage = async (req, res) => {
     const { messageId } = req.params;
     const { content } = req.body;
 
-    // Update the message content
-    const updatedMessage = await prisma.message.update({
-      where: { id: messageId },
-      data: { content }
-    });
+    const updatedMessage = await client.query(
+      `
+      UPDATE messages
+      SET content = $1
+      WHERE id = $2
+      RETURNING *;
+    `,
+      [content, messageId]
+    );
 
-    res.json({ message: 'Message updated successfully', updatedMessage });
+    res.json({
+      message: "Message updated successfully",
+      updatedMessage: updatedMessage.rows[0],
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error updating message' });
+    res.status(500).json({ message: "Error updating message" });
   }
 };

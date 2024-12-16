@@ -1,5 +1,5 @@
 import express from 'express';
-import { createPackage, getPackage, getUserPackages } from '../controllers/packages.js';
+import { createPackage, getPackageDetails, getPackages } from '../controllers/packages.js';
 import { authMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -7,7 +7,7 @@ const router = express.Router();
 router.use(authMiddleware);
 
 router.post('/', createPackage);
-router.get('/:trackingCode', getPackage);
-router.get('/user/packages', getUserPackages);
+router.get('/:trackingCode', getPackageDetails);
+router.get('/user/packages', getPackages);
 
 export default router;
