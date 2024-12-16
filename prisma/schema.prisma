@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  name            String
+  password        String
+  country         String
+  role            String    @default("user")
+  registrationDate DateTime @default(now())
+  packages        Package[]
+  messages        Message[]
+}
+
+model Package {
+  id           String   @id @default(uuid())
+  trackingCode String   @unique
+  status       String
+  daysRemaining Int
+  deliveryDate DateTime
+  lastChecked  DateTime
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  messages     Message[]
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  userId    String
+  packageId String
+  user      User     @relation(fields: [userId], references: [id])
+  package   Package  @relation(fields: [packageId], references: [id])
+}
