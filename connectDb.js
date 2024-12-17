@@ -1,18 +1,18 @@
-import "dotenv/config";
-import pkg from "pg";
-const { Client } = pkg;
+import { Client } from 'pg';
+import { config } from './config/env.js';
 
 export const client = new Client({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: config.databaseUrl, // Your DATABASE_URL environment variable
 });
 
 const connectDb = async () => {
   try {
     await client.connect();
-    console.log("Database connected successfully!");
+    console.log('Database connected successfully');
   } catch (error) {
-    console.error("Database connection failed:", error);
-    process.exit(1); // Exit the application if the connection fails
+    console.error('Database connection failed:', error.message);
+    process.exit(1); // Exit the app if connection fails
   }
 };
+
 export default connectDb;

@@ -43,8 +43,10 @@ export const register = async (req, res) => {
       user,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error creating user" });
+    console.error("Error in register controller:", error.message, error.stack);
+    res.status(500).json({ message: "Error creating user", error: error.message });
   }
+  
 };
 
 export const login = async (req, res) => {
