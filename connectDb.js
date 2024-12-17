@@ -1,9 +1,9 @@
-import { config } from './config/env.js';
+import "dotenv/config";
 import pkg from "pg";
 const { Client } = pkg;
 
 export const client = new Client({
-  connectionString: config.databaseUrl,
+  connectionString: process.env.DATABASE_URL,
 });
 
 const connectDb = async () => {
