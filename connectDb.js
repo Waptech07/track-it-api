@@ -3,7 +3,7 @@ import pkg from "pg";
 const { Client } = pkg;
 
 export const client = new Client({
-  connectionString: config.databaseUrl, // Your DATABASE_URL environment variable
+  connectionString: config.databaseUrl,
 });
 
 const connectDb = async () => {
