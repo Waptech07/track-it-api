@@ -1,5 +1,6 @@
-import { Client } from 'pg';
 import { config } from './config/env.js';
+import pkg from "pg";
+const { Client } = pkg;
 
 export const client = new Client({
   connectionString: config.databaseUrl, // Your DATABASE_URL environment variable
