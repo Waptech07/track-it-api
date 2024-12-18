@@ -74,6 +74,41 @@ export const login = async (req, res) => {
   }
 };
 
+export const fetchUser = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User not authenticated" });
+    }
+
+    // Query the user details from the database
+    const result = await client.query(
+      `SELECT id, email, name, role, country FROM users WHERE id = $1;`,
+      [userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const user = result.rows[0];
+
+    // Send the user details in response
+    res.json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      country: user.country,
+    });
+  } catch (error) {
+    console.error("Error in fetchUser controller:", error.message, error.stack);
+    res.status(500).json({ message: "Error fetching user details", error: error.message });
+  }
+};
+
+
 export const changePassword = async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
