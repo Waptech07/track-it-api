@@ -47,7 +47,7 @@ export const getUsers = async (req, res) => {
 export const getAllAdmins = async (req, res) => {
   try {
     const result = await client.query(`
-      SELECT id, name, email, country, registration_date AS "registrationDate"
+      SELECT id, name, email, country, role, registration_date AS "registrationDate"
       FROM users
       WHERE role = 'admin';
     `);
