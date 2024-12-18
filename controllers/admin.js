@@ -1,4 +1,5 @@
 import { client } from "../connectDb.js";
+import bcrypt from "bcryptjs";
 
 export const getAllAccounts = async (req, res) => {
   try {
@@ -42,6 +43,45 @@ export const getUsers = async (req, res) => {
     res.status(500).json({ message: "Error fetching users" });
   }
 };
+
+export const getAllAdmins = async (req, res) => {
+  try {
+    const result = await client.query(`
+      SELECT id, name, email, country, registration_date AS "registrationDate"
+      FROM users
+      WHERE role = 'admin';
+    `);
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching admins" });
+  }
+};
+
+export const addAdmin = async (req, res) => {
+  try {
+    const { name, email, country, password } = req.body;
+
+    // Hash password before storing (for example, with bcrypt)
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const result = await client.query(
+      `
+      INSERT INTO users (name, email, country, password, role, registration_date)
+      VALUES ($1, $2, $3, $4, 'admin', NOW())
+      RETURNING id, name, email, country, role, registration_date AS "registrationDate";
+    `,
+      [name, email, country, hashedPassword]
+    );
+
+    res.status(201).json({
+      message: "Admin user created successfully",
+      admin: result.rows[0],
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error adding admin user" });
+  }
+};
+
 
 export const updatePackageStatus = async (req, res) => {
   try {

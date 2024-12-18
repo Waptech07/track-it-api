@@ -3,7 +3,7 @@
     "private": true,
     "version": "1.0.0",
     "description": "Backend for Track-It application",
-    "type": "module",
+    "type": "commonjs",
     "scripts": {
         "dev": "nodemon index.js",
         "start": "node index.js",
